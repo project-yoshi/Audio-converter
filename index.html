@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Converter</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>Audio Converter</h1>
+            <p>Upload file audio, pilih format output, lalu download hasilnya.</p>
+        </div>
+
+        <!-- Drop Zone -->
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+            </div>
+            <p class="drop-title">Klik atau drag &amp; drop file audio</p>
+            <p class="drop-subtitle">Mendukung WAV · FLAC · MP3 · AAC · OGG · OPUS · M4A</p>
+            <input type="file" id="fileInput" multiple accept="audio/*" style="display:none" />
+        </div>
+
+        <!-- Format Output -->
+        <div class="format-row">
+            <span class="format-label">Convert ke</span>
+            <select id="outputFormat" onchange="updateQualityOptions()">
+                <option value="flac">FLAC — Lossless, kualitas terbaik</option>
+                <option value="mp3">MP3 — Paling kompatibel</option>
+                <option value="wav">WAV — Tanpa kompresi</option>
+                <option value="aac">AAC — Efisien, kualitas bagus</option>
+                <option value="ogg">OGG Vorbis — Open source</option>
+                <option value="opus">OPUS — Ukuran terkecil</option>
+                <option value="m4a">M4A — Format Apple</option>
+            </select>
+            <span class="format-arrow">&#9660;</span>
+        </div>
+
+        <!-- Quality Option -->
+        <div class="quality-row" id="qualityRow">
+            <span class="quality-label">Kualitas</span>
+            <select id="qualityOption">
+                <option value="default">Default</option>
+            </select>
+            <span class="format-arrow">&#9660;</span>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar" id="statsBar">
+            <span class="stat">Total: <span id="statTotal">0</span> file</span>
+            <span class="stat">Selesai: <span id="statDone">0</span></span>
+            <span class="stat">Gagal: <span id="statFailed">0</span></span>
+        </div>
+
+        <!-- File List -->
+        <div class="section-title" id="listTitle" style="display:none">File yang diupload</div>
+        <div class="file-list" id="fileList">
+            <div class="empty-state">
+                Belum ada file — upload file audio di atas untuk memulai
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions">
+            <button class="btn-primary" id="convertBtn" disabled onclick="startConvert()">Convert Semua</button>
+            <button class="btn-secondary" id="clearBtn" disabled onclick="clearAll()">Hapus Semua</button>
+            <button class="btn-download-all" id="downloadAllBtn" onclick="downloadAll()">Download Semua</button>
+        </div>
+
+        <!-- Log -->
+        <div class="log-box" id="logBox"></div>
+    </div>
+
+    <!-- Loading overlay saat load FFmpeg -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-card">
+            <div class="spinner"></div>
+            <p class="loading-text">Memuat FFmpeg</p>
+            <p class="loading-sub">Download pertama ~32MB, harap tunggu...</p>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
