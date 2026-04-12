@@ -14,6 +14,7 @@
         <div class="header">
             <h1>Audio Converter</h1>
             <p>Upload file audio, pilih format output, lalu download hasilnya.</p>
+            <span id="ffmpegStatus" class="ffmpeg-status status-loading">Memuat FFmpeg...</span>
         </div>
 
         <!-- Drop Zone -->
@@ -78,15 +79,6 @@
 
         <!-- Log -->
         <div class="log-box" id="logBox"></div>
-    </div>
-
-    <!-- Loading overlay saat load FFmpeg -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-card">
-            <div class="spinner"></div>
-            <p class="loading-text">Memuat FFmpeg</p>
-            <p class="loading-sub">Download pertama ~32MB, harap tunggu...</p>
-        </div>
     </div>
 
     <script type="module" src="js/app.js"></script>
