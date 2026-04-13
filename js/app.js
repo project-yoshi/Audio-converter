@@ -37,9 +37,9 @@ function setFFmpegStatus(state) {
   const el = document.getElementById('ffmpegStatus');
   if (!el) return;
   const map = {
-    loading: { text: 'Memuat FFmpeg...', cls: 'status-loading' },
-    ready: { text: 'FFmpeg siap', cls: 'status-ready' },
-    error: { text: 'FFmpeg gagal', cls: 'status-error' },
+    loading: { text: 'Loading FFmpeg...', cls: 'status-loading' },
+    ready: { text: 'FFmpeg ready', cls: 'status-ready' },
+    error: { text: 'FFmpeg failed', cls: 'status-error' },
   };
   const { text, cls } = map[state];
   el.textContent = text;
@@ -64,9 +64,9 @@ function setFFmpegLoaderProgress(pct) {
     if (pctEl) pctEl.textContent = pct + '%';
   }
   if (label) {
-    const step = pct < 30 ? 'Mengunduh ffmpeg-core.js...'
-      : pct < 90 ? 'Mengunduh ffmpeg-core.wasm...'
-        : 'Menginisialisasi...';
+    const step = pct < 30 ? 'Downloading ffmpeg-core.js...'
+      : pct < 90 ? 'Downloading ffmpeg-core.wasm...'
+        : 'Initializing...';
     label.textContent = step;
   }
 }
@@ -79,7 +79,7 @@ function setFFmpegLoaderDone() {
   if (!loader) return;
   fill?.classList.remove('indeterminate');
   loader.classList.add('done');
-  if (label) label.textContent = 'FFmpeg siap';
+  if (label) label.textContent = 'FFmpeg ready';
   if (pctEl) pctEl.textContent = '100%';
   // Auto-hide after 1.5s
   setTimeout(() => showFFmpegLoader(false), 1500);
@@ -92,7 +92,7 @@ function setFFmpegLoaderError() {
   if (!loader) return;
   fill?.classList.remove('indeterminate');
   loader.classList.add('error');
-  if (label) label.textContent = 'FFmpeg gagal dimuat';
+  if (label) label.textContent = 'FFmpeg failed to load';
 }
 
 // ============================================================
@@ -195,12 +195,12 @@ window.startConvert = async function () {
   try {
     // FFmpeg already loaded on page open — no waiting needed
     if (!ffmpegReady) {
-      log('FFmpeg belum siap, harap tunggu sebentar...');
+      log('FFmpeg is not ready, please wait a moment...');
       // fallback: wait up to 10s
       for (let t = 0; t < 20 && !ffmpegReady; t++) {
         await new Promise(r => setTimeout(r, 500));
       }
-      if (!ffmpegReady) throw new Error('FFmpeg gagal dimuat.');
+      if (!ffmpegReady) throw new Error('FFmpeg failed to load.');
     }
 
     // Convert files one by one
@@ -227,10 +227,10 @@ window.startConvert = async function () {
           }
         );
         f.status = 'done';
-        log(`Berhasil! Ukuran output: ${formatSize(f.blob.size)}\n`);
+        log(`Success! Output size: ${formatSize(f.blob.size)}\n`);
       } catch (err) {
         f.status = 'error';
-        log(`Gagal: ${err.message}\n`);
+        log(`Failed: ${err.message}\n`);
       }
 
       reRender();
@@ -238,11 +238,11 @@ window.startConvert = async function () {
 
     const doneCount = files.filter(f => f.status === 'done').length;
     const failedCount = files.filter(f => f.status === 'error').length;
-    log(`\nSelesai! Berhasil: ${doneCount} | Gagal: ${failedCount}`);
+    log(`\nCompleted! Success: ${doneCount} | Failed: ${failedCount}`);
 
   } catch (err) {
-    log('Error fatal: ' + err.message);
-    alert('Gagal convert. ' + err.message);
+    log('Fatal error: ' + err.message);
+    alert('Failed to convert. ' + err.message);
   }
 
   converting = false;

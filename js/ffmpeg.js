@@ -18,11 +18,11 @@ export async function loadFFmpeg(logFn, progressFn = () => { }) {
   const umdUtil = window.FFmpegUtil ?? window.FFmpegWasm;
 
   if (umdFFmpeg?.FFmpeg && umdUtil?.fetchFile) {
-    logFn('[local] Menggunakan lib/ lokal');
+    logFn('[local] Using local lib/');
     FFmpeg = umdFFmpeg.FFmpeg;
     fetchFile = umdUtil.fetchFile;
   } else {
-    logFn('[cdn] lib/ tidak ditemukan, fallback ke CDN...');
+    logFn('[cdn] lib/ not found, fallback to CDN...');
     const mod1 = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/esm/index.js');
     const mod2 = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
     FFmpeg = mod1.FFmpeg;
@@ -90,7 +90,7 @@ export async function convertFile(file, index, fmt, quality, logFn, progressFn) 
   try {
     await ffmpeg.writeFile(inputName, await window._fetchFile(file));
     const args = buildArgs(inputName, outputName, fmt, quality);
-    logFn('Menjalankan: ffmpeg ' + args.join(' '));
+    logFn('Running: ffmpeg ' + args.join(' '));
     await ffmpeg.exec(args);
 
     const data = await ffmpeg.readFile(outputName);

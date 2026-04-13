@@ -83,12 +83,12 @@ export function render(files, converting, downloadFileFn) {
   document.getElementById('statFailed').textContent = failed;
 
   if (files.length === 0) {
-    list.innerHTML = `<div class="empty-state">Belum ada file — upload file audio di atas untuk memulai</div>`;
+    list.innerHTML = `<div class="empty-state">No files yet — upload audio files above to get started</div>`;
     return;
   }
 
   const badgeClass = { waiting: 'badge-waiting', converting: 'badge-converting', done: 'badge-done', error: 'badge-error' };
-  const badgeLabel = { waiting: 'Menunggu', converting: 'Converting...', done: 'Selesai', error: 'Gagal' };
+  const badgeLabel = { waiting: 'Ready to convert', converting: 'Converting...', done: 'Completed', error: 'Failed' };
 
   list.innerHTML = files.map((f, i) => {
     const progressHtml = f.status === 'converting'
@@ -107,7 +107,7 @@ export function render(files, converting, downloadFileFn) {
       : `<span class="badge ${badgeClass[f.status]}">${badgeLabel[f.status]}</span>`;
 
     const removeHtml = f.status !== 'converting'
-      ? `<button class="btn-remove" onclick="removeFile(${i})" title="Hapus">&#x2715;</button>`
+      ? `<button class="btn-remove" onclick="removeFile(${i})" title="Remove">&#x2715;</button>`
       : '';
 
     return `

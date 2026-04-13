@@ -63,7 +63,7 @@ body {
 /* ============================================================
    HEADER
    ============================================================ */
-.header { margin-bottom: 2rem; }
+.header { margin-bottom: 2rem; text-align: center; }
 .header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
 .header p  { font-size: 14px; color: var(--text-secondary); }
 
@@ -121,6 +121,7 @@ body {
   border-radius: var(--radius-md);
   padding: 10px 14px;
   margin-bottom: 1rem;
+
 }
 .format-label,
 .quality-label {
@@ -132,7 +133,8 @@ body {
 .quality-row select {
   flex: 1;
   border: none;
-  background: transparent;
+  background: var(--bg);
+
   font-size: 14px;
   font-weight: 500;
   color: var(--text);
