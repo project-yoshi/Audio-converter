@@ -9,28 +9,23 @@ import { mimeMap } from './config.js';
 
 let ffmpeg = null;
 
-export async function loadFFmpeg(logFn) {
+export async function loadFFmpeg(logFn, progressFn = () => { }) {
   if (ffmpeg) return ffmpeg;
 
   let FFmpeg, fetchFile;
 
-  // ── Coba ambil dari UMD global (lib/ lokal) ──────────────
-  // @ffmpeg/ffmpeg UMD mengekspos window.FFmpegWASM
-  // @ffmpeg/util   UMD mengekspos window.FFmpegUtil
   const umdFFmpeg = window.FFmpegWASM ?? window.FFmpeg;
-  const umdUtil   = window.FFmpegUtil ?? window.FFmpegWasm;
+  const umdUtil = window.FFmpegUtil ?? window.FFmpegWasm;
 
   if (umdFFmpeg?.FFmpeg && umdUtil?.fetchFile) {
     logFn('[local] Menggunakan lib/ lokal');
-    FFmpeg    = umdFFmpeg.FFmpeg;
+    FFmpeg = umdFFmpeg.FFmpeg;
     fetchFile = umdUtil.fetchFile;
-
   } else {
-    // ── Fallback: ESM CDN ─────────────────────────────────
     logFn('[cdn] lib/ tidak ditemukan, fallback ke CDN...');
     const mod1 = await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/esm/index.js');
     const mod2 = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
-    FFmpeg    = mod1.FFmpeg;
+    FFmpeg = mod1.FFmpeg;
     fetchFile = mod2.fetchFile;
   }
 
@@ -39,23 +34,31 @@ export async function loadFFmpeg(logFn) {
   ffmpeg = new FFmpeg();
   ffmpeg.on('log', ({ message }) => logFn(message));
 
-  // Tentukan core URL — lokal jika ada, CDN jika tidak
+  // Track download progress of core files
+  ffmpeg.on('progress', ({ progress }) => {
+    progressFn(Math.round(progress * 100));
+  });
+
   const hasLocal = !!(window.FFmpegWASM ?? window.FFmpeg);
-  const coreBase = hasLocal
-    ? ''   // path absolut dari root
-    : 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
 
   if (hasLocal) {
+    // Simulate progress steps for local load (instant, no real progress events)
+    progressFn(10);
     await ffmpeg.load({
       coreURL: '/lib/ffmpeg-core.js',
       wasmURL: '/lib/ffmpeg-core.wasm',
     });
+    progressFn(100);
   } else {
     const { toBlobURL } = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
-    await ffmpeg.load({
-      coreURL: await toBlobURL(`${coreBase}/ffmpeg-core.js`,   'text/javascript'),
-      wasmURL: await toBlobURL(`${coreBase}/ffmpeg-core.wasm`, 'application/wasm'),
-    });
+    const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+    progressFn(5);
+    const coreURL = await toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript');
+    progressFn(30);
+    const wasmURL = await toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm');
+    progressFn(90);
+    await ffmpeg.load({ coreURL, wasmURL });
+    progressFn(100);
   }
 
   return ffmpeg;
@@ -65,20 +68,20 @@ export function buildArgs(inputName, outputName, fmt, quality) {
   const args = ['-i', inputName];
   switch (fmt) {
     case 'flac': args.push('-compression_level', quality); break;
-    case 'mp3':  args.push('-codec:a', 'libmp3lame', '-b:a', quality); break;
-    case 'wav':  args.push('-codec:a', 'pcm_' + quality); break;
-    case 'aac':  args.push('-codec:a', 'aac', '-b:a', quality); break;
-    case 'ogg':  args.push('-codec:a', 'libvorbis', '-q:a', quality); break;
+    case 'mp3': args.push('-codec:a', 'libmp3lame', '-b:a', quality); break;
+    case 'wav': args.push('-codec:a', 'pcm_' + quality); break;
+    case 'aac': args.push('-codec:a', 'aac', '-b:a', quality); break;
+    case 'ogg': args.push('-codec:a', 'libvorbis', '-q:a', quality); break;
     case 'opus': args.push('-codec:a', 'libopus', '-b:a', quality); break;
-    case 'm4a':  args.push('-codec:a', 'aac', '-b:a', quality); break;
+    case 'm4a': args.push('-codec:a', 'aac', '-b:a', quality); break;
   }
   args.push('-y', outputName);
   return args;
 }
 
 export async function convertFile(file, index, fmt, quality, logFn, progressFn) {
-  const ext        = file.name.split('.').pop() || 'audio';
-  const inputName  = `input_${index}.${ext}`;
+  const ext = file.name.split('.').pop() || 'audio';
+  const inputName = `input_${index}.${ext}`;
   const outputName = `output_${index}.${fmt}`;
 
   const onProgress = ({ progress }) => progressFn(progress);
